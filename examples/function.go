@@ -44,6 +44,7 @@ func main() {
 		dc.SetColor(colormap.Viridis.At(t))
 		dc.FillPreserve()
 		dc.SetRGB(0, 0, 0)
+		dc.SetLineWidth(2)
 		dc.Stroke()
 	}
 

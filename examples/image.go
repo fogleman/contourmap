@@ -11,7 +11,7 @@ import (
 
 const (
 	N     = 20
-	Scale = 2
+	Scale = 1
 )
 
 func main() {

@@ -6,12 +6,15 @@ import (
 )
 
 type ContourMap struct {
-	W, H int
-	Min  float64
-	Max  float64
+	W    int     // width of the contour map in pixels
+	H    int     // height of the contour map in pixels
+	Min  float64 // minimum value contained in this contour map
+	Max  float64 // maximum value contained in this contour map
 	grid []float64
 }
 
+// FromFloat64s returns a new ContourMap for the provided 2D grid of values.
+// len(grid) must equal w * h.
 func FromFloat64s(w, h int, grid []float64) *ContourMap {
 	min := math.Inf(1)
 	max := math.Inf(-1)
@@ -25,6 +28,9 @@ func FromFloat64s(w, h int, grid []float64) *ContourMap {
 	return &ContourMap{w, h, min, max, grid}
 }
 
+// FromFloat64s returns a new ContourMap for the provided function.
+// The function will be called for all points x = [0, w) and y = [0, h) to
+// determine the Z value at each point.
 func FromFunction(w, h int, f Function) *ContourMap {
 	grid := make([]float64, w*h)
 	i := 0
@@ -37,6 +43,9 @@ func FromFunction(w, h int, f Function) *ContourMap {
 	return FromFloat64s(w, h, grid)
 }
 
+// FromImage returns a new ContourMap for the provided image. The image is
+// converted to 16-bit grayscale and will have Z values mapped from
+// [0, 65535] to [0, 1].
 func FromImage(im image.Image) *ContourMap {
 	gray := imageToGray16(im)
 	w := gray.Bounds().Size().X
@@ -55,10 +64,15 @@ func (m *ContourMap) at(x, y int) float64 {
 	return m.grid[y*m.W+x]
 }
 
+// Contours returns a list of contours the represent isolines at the specified
+// Z value.
 func (m *ContourMap) Contours(z float64) []Contour {
 	return marchingSquares(m, m.W, m.H, z)
 }
 
+// Closed returns a new ContourMap that will ensure all Contours are closed
+// paths by following the border when they would normally stop at the edge
+// of the grid.
 func (m *ContourMap) Closed() *ContourMap {
 	w := m.W + 2
 	h := m.H + 2
