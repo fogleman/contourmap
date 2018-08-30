@@ -9,10 +9,10 @@ import (
 )
 
 const (
-	W     = 1024
-	H     = 1024
+	W     = 1600
+	H     = 1600
 	N     = 48
-	Scale = 170
+	Scale = 150
 )
 
 func f(i, j int) float64 {
@@ -44,7 +44,7 @@ func main() {
 		dc.SetColor(colormap.Viridis.At(t))
 		dc.FillPreserve()
 		dc.SetRGB(0, 0, 0)
-		dc.SetLineWidth(2)
+		dc.SetLineWidth(3)
 		dc.Stroke()
 	}
 
