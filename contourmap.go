@@ -3,6 +3,7 @@ package contourmap
 import (
 	"image"
 	"math"
+	"sort"
 )
 
 type ContourMap struct {
@@ -64,7 +65,40 @@ func (m *ContourMap) at(x, y int) float64 {
 	return m.grid[y*m.W+x]
 }
 
-// Contours returns a list of contours the represent isolines at the specified
+func (m *ContourMap) HistogramZs(numLevels int) []float64 {
+	// compute histogram
+	hist := make(map[float64]int)
+	for _, v := range m.grid {
+		hist[v]++
+	}
+
+	// sort histogram keys
+	keys := make([]float64, 0, len(hist))
+	for key := range hist {
+		keys = append(keys, key)
+	}
+	sort.Float64s(keys)
+
+	result := make([]float64, numLevels)
+	numPixels := len(m.grid)
+	for i := 0; i < numLevels; i++ {
+		// compute number of pixels for this level
+		t := (float64(i) + 0.5) / float64(numLevels)
+		pixelCount := int(t * float64(numPixels))
+		// find z
+		var total int
+		for _, k := range keys {
+			total += hist[k]
+			if total >= pixelCount {
+				result[i] = k
+				break
+			}
+		}
+	}
+	return result
+}
+
+// Contours returns a list of contours that represent isolines at the specified
 // Z value.
 func (m *ContourMap) Contours(z float64) []Contour {
 	return marchingSquares(m, m.W, m.H, z)
