@@ -139,14 +139,26 @@ func marchingSquares(m *ContourMap, w, h int, z float64) []Contour {
 		}
 	}
 
+	// pick out all boundary edgePoints
+	boundaryEdgePoint := make(map[edge]Point)
+	for e, p := range edgePoint {
+		if e.Boundary {
+			boundaryEdgePoint[e] = p
+		}
+	}
+
 	var contours []Contour
 	for len(edgePoint) > 0 {
 		var contour Contour
 
 		// find an unused edge; prefer starting at a boundary
 		var e edge
-		for e = range edgePoint {
-			if e.Boundary {
+		if len(boundaryEdgePoint) > 0 {
+			for e = range boundaryEdgePoint {
+				break
+			}
+		} else {
+			for e = range edgePoint {
 				break
 			}
 		}
@@ -166,11 +178,17 @@ func marchingSquares(m *ContourMap, w, h int, z float64) []Contour {
 			}
 			contour = append(contour, p)
 			delete(edgePoint, e)
+			if e.Boundary {
+				delete(boundaryEdgePoint, e)
+			}
 			e = nextEdge[p]
 		}
 
 		// make sure the first one gets deleted in case of open paths
 		delete(edgePoint, e0)
+		if e0.Boundary {
+			delete(boundaryEdgePoint, e0)
+		}
 
 		// add the contour
 		contours = append(contours, contour)
