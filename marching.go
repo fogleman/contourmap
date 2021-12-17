@@ -78,63 +78,87 @@ func marchingSquares(m *ContourMap, w, h int, z float64) []Contour {
 			case 1:
 				edgePoint[te] = t
 				nextEdge[t] = le
+				edgePoint[le] = l
 			case 2:
 				edgePoint[re] = r
 				nextEdge[r] = te
+				edgePoint[te] = t
 			case 3:
 				edgePoint[re] = r
 				nextEdge[r] = le
+				edgePoint[le] = l
 			case 4:
 				edgePoint[le] = l
 				nextEdge[l] = be
+				edgePoint[be] = b
 			case 5:
 				edgePoint[te] = t
 				nextEdge[t] = be
+				edgePoint[be] = b
 			case 6:
 				if connectHigh {
 					edgePoint[le] = l
 					nextEdge[l] = te
+					edgePoint[te] = t
+
 					edgePoint[re] = r
 					nextEdge[r] = be
+					edgePoint[be] = b
 				} else {
 					edgePoint[re] = r
 					nextEdge[r] = te
+					edgePoint[te] = t
+
 					edgePoint[le] = l
 					nextEdge[l] = be
+					edgePoint[be] = b
 				}
 			case 7:
 				edgePoint[re] = r
 				nextEdge[r] = be
+				edgePoint[be] = b
 			case 8:
 				edgePoint[be] = b
 				nextEdge[b] = re
+				edgePoint[re] = r
 			case 9:
 				if connectHigh {
 					edgePoint[te] = t
 					nextEdge[t] = re
+					edgePoint[re] = r
+
 					edgePoint[be] = b
 					nextEdge[b] = le
+					edgePoint[le] = l
 				} else {
 					edgePoint[te] = t
 					nextEdge[t] = le
+					edgePoint[le] = l
+
 					edgePoint[be] = b
 					nextEdge[b] = re
+					edgePoint[re] = r
 				}
 			case 10:
 				edgePoint[be] = b
 				nextEdge[b] = te
+				edgePoint[te] = t
 			case 11:
 				edgePoint[be] = b
 				nextEdge[b] = le
+				edgePoint[le] = l
 			case 12:
 				edgePoint[le] = l
 				nextEdge[l] = re
+				edgePoint[re] = r
 			case 13:
 				edgePoint[te] = t
 				nextEdge[t] = re
+				edgePoint[re] = r
 			case 14:
 				edgePoint[le] = l
 				nextEdge[l] = te
+				edgePoint[te] = t
 			}
 		}
 	}
@@ -155,11 +179,15 @@ func marchingSquares(m *ContourMap, w, h int, z float64) []Contour {
 		var e edge
 		if len(boundaryEdgePoint) > 0 {
 			for e = range boundaryEdgePoint {
-				break
+				if _, has := nextEdge[edgePoint[e]]; has {
+					break
+				}
 			}
 		} else {
 			for e = range edgePoint {
-				break
+				if _, has := nextEdge[edgePoint[e]]; has {
+					break
+				}
 			}
 		}
 		e0 := e
@@ -176,11 +204,14 @@ func marchingSquares(m *ContourMap, w, h int, z float64) []Contour {
 			if !ok {
 				break
 			}
+
 			contour = append(contour, p)
+
 			delete(edgePoint, e)
 			if e.Boundary {
 				delete(boundaryEdgePoint, e)
 			}
+
 			e = nextEdge[p]
 		}
 
