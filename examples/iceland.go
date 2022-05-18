@@ -1,9 +1,11 @@
 package main
 
 import (
+	"image"
 	"log"
 	"os"
 
+	vidio "github.com/AlexEidt/Vidio"
 	"github.com/fogleman/colormap"
 	"github.com/fogleman/contourmap"
 	"github.com/fogleman/gg"
@@ -39,6 +41,15 @@ func main() {
 	dc.Clear()
 	dc.Scale(Scale, Scale)
 
+	options := vidio.Options{FPS: 1, Loop: 0, Delay: 50}
+	video, err := vidio.NewVideoWriter("output.gif", w, h, &options)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	buffer := make([]uint8, w*h*3)
+	img, _ := dc.Image().(*image.RGBA)
+
 	pal := colormap.New(colormap.ParseColors(Palette))
 	for i := 0; i < N; i++ {
 		t := float64(i) / (N - 1)
@@ -55,7 +66,25 @@ func main() {
 		dc.SetRGB(0, 0, 0)
 		dc.SetLineWidth(1)
 		dc.Stroke()
+
+		if err == nil {
+			fillBuffer(img, buffer)
+			video.Write(buffer)
+		}
 	}
 
 	dc.SavePNG("out.png")
+}
+
+func fillBuffer(im *image.RGBA, buffer []uint8) {
+	index := 0
+	for y := 0; y < im.Bounds().Dy(); y++ {
+		for x := 0; x < im.Bounds().Dx(); x++ {
+			r, g, b, _ := im.At(x, y).RGBA()
+			buffer[index+0] = uint8(r >> 8)
+			buffer[index+1] = uint8(g >> 8)
+			buffer[index+2] = uint8(b >> 8)
+			index += 3
+		}
+	}
 }
